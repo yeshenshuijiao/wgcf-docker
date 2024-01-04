@@ -13,25 +13,23 @@ jobs:
     steps:
 
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
-
-      - name: Get Docker tags for Debian based image
-        id: docker_meta_debian
-        uses: crazy-max/ghaction-docker-meta@v2
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v4
         with:
-          images: |
-            neilpang/wgcf-docker
+          images: neilpang/wgcf-docker
           tags: |
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
             type=raw,value=latest,enable=${{ endsWith(github.ref, github.event.repository.default_branch) }}
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v1
+        uses: docker/setup-qemu-action@v2
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
+        uses: docker/setup-buildx-action@v2
 
       - name: Login to DockerHub
         uses: docker/login-action@v1 
@@ -46,8 +44,8 @@ jobs:
           file: Dockerfile
           platforms: linux/amd64,linux/arm64,linux/arm/v7
           push: true
-          tags: ${{ steps.docker_meta_debian.outputs.tags }}
-          labels: ${{ steps.docker_meta_debian.outputs.labels }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
 
       - name: Images digests
         run: echo ${{ steps.docker_build_debian.outputs.digest }}
@@ -57,27 +55,25 @@ jobs:
     steps:
 
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
-      - name: Get Docker tags for Alpine based image
-        id: docker_meta_alpine
-        uses: crazy-max/ghaction-docker-meta@v2
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v4
         with:
-          images: |
-            neilpang/wgcf-docker
+          images: neilpang/wgcf-docker
           tags: |
             type=semver,suffix=-alpine,pattern={{version}}
             type=semver,suffix=-alpine,pattern={{major}}.{{minor}}
             type=raw,value=alpine,enable=${{ endsWith(github.ref, github.event.repository.default_branch) }}
           flavor: latest=false
-
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v1
+        uses: docker/setup-qemu-action@v2
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
+        uses: docker/setup-buildx-action@v2
 
       - name: Login to DockerHub
         uses: docker/login-action@v1 
@@ -92,8 +88,8 @@ jobs:
           file: Dockerfile.alpine
           platforms: linux/amd64,linux/arm64,linux/arm/v7
           push: true
-          tags: ${{ steps.docker_meta_alpine.outputs.tags }}
-          labels: ${{ steps.docker_meta_alpine.outputs.labels }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
 
       - name: Images digests
         run: echo ${{ steps.docker_build_alpine.outputs.digest }}
